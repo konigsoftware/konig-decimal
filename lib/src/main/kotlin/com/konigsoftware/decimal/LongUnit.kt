@@ -46,7 +46,7 @@ interface LongUnit {
      * LongQuatros is 10^-4. ie: 1 LongQuatro = 0.0001
      */
     object LongQuatros : LongUnit {
-        override val oneInLongUnit: KonigDecimal = KonigDecimal(1_000)
+        override val oneInLongUnit: KonigDecimal = KonigDecimal(10_000)
     }
 
     /**

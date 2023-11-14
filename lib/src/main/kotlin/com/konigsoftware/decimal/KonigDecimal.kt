@@ -21,6 +21,7 @@ class KonigDecimal private constructor(private val amount: BigDecimal) {
      * @throws NumberFormatException if [amount] is not a valid representation of a KonigDecimal.
      */
     constructor(amount: String) : this(BigDecimal(amount, MathContext.UNLIMITED))
+
     /**
      * Construct an unlimited precision KonigDecimal from an [Int] representation of a KonigDecimal with a scale of 0.
      */
@@ -78,16 +79,25 @@ class KonigDecimal private constructor(private val amount: BigDecimal) {
 
     // Arithmetic functions
 
+    /**
+     * Enables the use of the `+` operator for KonigDecimal instances
+     */
     operator fun plus(other: KonigDecimal): KonigDecimal = this.amount.plus(other.amount).toKonigDecimal()
 
+    /**
+     * Enables the use of the `-` operator for KonigDecimal instances
+     */
     operator fun minus(other: KonigDecimal): KonigDecimal = this.amount.minus(other.amount).toKonigDecimal()
 
+    /**
+     * Enables the use of the `*` operator for KonigDecimal instances
+     */
     operator fun times(other: KonigDecimal): KonigDecimal {
         return this.amount.times(other.amount).toKonigDecimal()
     }
 
     /**
-     * Returns a KonigDecimal whose value is (this / [other]).
+     * Enables the use of the `/` operator. Returns a KonigDecimal whose value is (this / [other]).
      *
      * If the quotient has a non-terminating decimal expansion (unlimited precision representation of the quotient is impossible)
      * the quotient will be represented with a precision setting matching the precision of the IEEE 754-2019 decimal128 format,
@@ -104,24 +114,85 @@ class KonigDecimal private constructor(private val amount: BigDecimal) {
 
     // Comparison functions
 
+    /**
+     * Compares this [KonigDecimal] numerically with the specified
+     * [KonigDecimal].  Two [KonigDecimal] objects that are
+     * equal in value but have a different scale (like 2.0 and 2.00)
+     * are considered equal by this method. Such values are in the
+     * same _cohort_.
+     *
+     * This method enables the use for the comparison operators `<`,
+     * `>`, `>=`, `<=`.
+     *
+     * @param  [other] to which this [KonigDecimal] is to be compared.
+     * @return -1, 0, or 1 as this [KonigDecimal] is numerically less than, equal to, or greater than [other].
+     */
     operator fun compareTo(other: KonigDecimal): Int {
         return this.amount.compareTo(other.amount)
     }
 
+    /**
+     * Enables the use of the `==` and `!=` operators. Compares this [KonigDecimal] with the specified [other] for equality. Unlike [compareTo], this method considers two
+     * [KonigDecimal] objects equal only if they are equal in value and scale. Therefore, 2.0 is not equal to 2.00 when compared by this method.
+     *
+     * @param [other] [KonigDecimal] to which this [KonigDecimal] is to be compared.
+     * @return `true` if and only if the specified [other] is a [KonigDecimal] whose value and scale are equal to this [KonigDecimal]'s.
+     */
     override operator fun equals(other: Any?) =
         if (other is KonigDecimal) this.amount == other.amount else false
 
+    /**
+     * Compares this [KonigDecimal] with the specified [other] for equality. Unlike [equals], this method considers two
+     * [KonigDecimal] objects equal only if they are equal in value (and not scale). Therefore, 2.0 _is_ equal to 2.00 when compared by this method.
+     *
+     * @param [other] [KonigDecimal] to which this [KonigDecimal] is to be compared.
+     * @return `true` if and only if the specified [other] is a [KonigDecimal] whose value is equal to this [KonigDecimal]'s.
+     */
+    fun equalsIgnoreScale(other: KonigDecimal): Boolean =
+        this.amount.compareTo(other.amount) == 0
+
+    /**
+     * Returns the hash code for this [KonigDecimal]. The hash code is computed as a function of the unscaled value and the scale of this [KonigDecimal].
+     *
+     * @return hash code for this [KonigDecimal]
+     */
     override fun hashCode(): Int {
         return amount.hashCode()
     }
 
     // Utility functions
 
-    override fun toString() = amount.toString()
-    fun toPlainString(): String = this.amount.toPlainString()
+    /**
+     * Returns a string representation of this [KonigDecimal]
+     * without an exponent field.  For values with a positive scale,
+     * the number of digits to the right of the decimal point is used
+     * to indicate scale.  For values with a zero or negative scale,
+     * the resulting string is generated as if the value were
+     * converted to a numerically equal value with zero scale and as
+     * if all the trailing zeros of the zero scale value were present
+     * in the result.
+     *
+     * The entire string is prefixed by a minus sign character '-'
+     * `('\u002D')` if the unscaled value is less than
+     * zero. No sign character is prefixed if the unscaled value is
+     * zero or positive.
+     */
+    override fun toString(): String = amount.toPlainString()
 
+    /**
+     * Converts this [KonigDecimal] to a [Double].
+     * This conversion is similar to the
+     * _narrowing primitive conversion_ from [Double] to
+     * [Float] as defined in
+     * _The Java Language Specification_:
+     * if this [KonigDecimal] has too great a
+     * magnitude to be represented as a [Double], it will be
+     * converted to [Double.NEGATIVE_INFINITY] or [Double.POSITIVE_INFINITY] as appropriate.  Note that even when
+     * the return value is finite, this conversion can lose
+     * information about the precision of the [KonigDecimal]
+     * value.
+     */
     fun toDouble(): Double = this.amount.toDouble()
-
 
     /**
      * Converts arbitrary precision KonigDecimal to a Long by rounding the arbitrary precision to Nanos scale
@@ -187,7 +258,7 @@ class KonigDecimal private constructor(private val amount: BigDecimal) {
             return amount.hashCode()
         }
 
-        fun toPlainString(): String = this.amount.toPlainString()
+        override fun toString(): String = this.amount.toString()
 
         /**
          * Converts FixedKonigDecimal to a Long.
@@ -221,10 +292,10 @@ class KonigDecimal private constructor(private val amount: BigDecimal) {
                 multipliedAmount.amount.longValueExact()
             } catch (e: Exception) {
                 if (e.localizedMessage == "Overflow") {
-                    throw ArithmeticException("Unable to convert ${this.amount.toPlainString()} to $longUnit due to overflow")
+                    throw ArithmeticException("Unable to convert ${this.amount} to ${longUnit::class.simpleName} due to overflow")
                 }
 
-                throw ArithmeticException("Unable to convert ${this.amount.toPlainString()} to $longUnit as precision will be lost. Please convert to the proper scale before converting to a long")
+                throw ArithmeticException("Unable to convert ${this.amount} to ${longUnit::class.simpleName} as precision will be lost. Please convert to the proper scale before converting to a long")
             }
         }
 
@@ -235,35 +306,35 @@ class KonigDecimal private constructor(private val amount: BigDecimal) {
          * Example:
          *
          * ```kotlin
-         * KonigDecimal("1.012345678909876543690").roundToScale(Attos).roundToNewScale(Attos) // FixedKonigDecimal<Attos>("1.012345678909876544") (no-op)
-         * KonigDecimal("1.012345678909876543690").roundToScale(Attos).roundToNewScale(Nanos) // FixedKonigDecimal<Nanos>("1.012345679")
-         * KonigDecimal("1.012345678909876543690").roundToScale(Attos).roundToNewScale(Octos) // FixedKonigDecimal<Octos>("1.01234568")
-         * KonigDecimal("1.012345678909876543690").roundToScale(Attos).roundToNewScale(Micros) // FixedKonigDecimal<Micros>("1.012346")
-         * KonigDecimal("1.012345678909876543690").roundToScale(Attos).roundToNewScale(Centis) // FixedKonigDecimal<Centis>("1.01")
+         * KonigDecimal("1.012345678909876543690").roundToScale(Attos).roundToScale(Attos) // FixedKonigDecimal<Attos>("1.012345678909876544") (no-op)
+         * KonigDecimal("1.012345678909876543690").roundToScale(Attos).roundToScale(Nanos) // FixedKonigDecimal<Nanos>("1.012345679")
+         * KonigDecimal("1.012345678909876543690").roundToScale(Attos).roundToScale(Octos) // FixedKonigDecimal<Octos>("1.01234568")
+         * KonigDecimal("1.012345678909876543690").roundToScale(Attos).roundToScale(Micros) // FixedKonigDecimal<Micros>("1.012346")
+         * KonigDecimal("1.012345678909876543690").roundToScale(Attos).roundToScale(Centis) // FixedKonigDecimal<Centis>("1.01")
          *
-         * KonigDecimal("1.01234567890").roundToScale(Nanos).roundToNewScale(Attos) // <- THROWS ERROR. Cannot add precision to already fixed precision
-         * KonigDecimal("1.01234567890").roundToScale(Nanos).roundToNewScale(Nanos) // FixedKonigDecimal<Nanos>("1.012345679") (no-op)
-         * KonigDecimal("1.01234567890").roundToScale(Nanos).roundToNewScale(Octos) // FixedKonigDecimal<Octos>("1.01234568")
-         * KonigDecimal("1.01234567890").roundToScale(Nanos).roundToNewScale(Micros) // FixedKonigDecimal<Micros>("1.012346")
-         * KonigDecimal("1.01234567890").roundToScale(Nanos).roundToNewScale(Centis) // FixedKonigDecimal<Centis>("1.01")
+         * KonigDecimal("1.01234567890").roundToScale(Nanos).roundToScale(Attos) // <- THROWS ERROR. Cannot add precision to already fixed precision
+         * KonigDecimal("1.01234567890").roundToScale(Nanos).roundToScale(Nanos) // FixedKonigDecimal<Nanos>("1.012345679") (no-op)
+         * KonigDecimal("1.01234567890").roundToScale(Nanos).roundToScale(Octos) // FixedKonigDecimal<Octos>("1.01234568")
+         * KonigDecimal("1.01234567890").roundToScale(Nanos).roundToScale(Micros) // FixedKonigDecimal<Micros>("1.012346")
+         * KonigDecimal("1.01234567890").roundToScale(Nanos).roundToScale(Centis) // FixedKonigDecimal<Centis>("1.01")
          *
-         * KonigDecimal("1.01234567890").roundToScale(Octos).roundToNewScale(Attos) // <- THROWS ERROR. Cannot add precision to already fixed precision
-         * KonigDecimal("1.01234567890").roundToScale(Octos).roundToNewScale(Nanos) // <- THROWS ERROR. Cannot add precision to already fixed precision
-         * KonigDecimal("1.01234567890").roundToScale(Octos).roundToNewScale(Octos) // FixedKonigDecimal<Octos>("1.01234568") (no-op)
-         * KonigDecimal("1.01234567890").roundToScale(Octos).roundToNewScale(Micros) // FixedKonigDecimal<Micros>("1.012346")
-         * KonigDecimal("1.01234567890").roundToScale(Octos).roundToNewScale(Centis) // FixedKonigDecimal<Centis>("1.01")
+         * KonigDecimal("1.01234567890").roundToScale(Octos).roundToScale(Attos) // <- THROWS ERROR. Cannot add precision to already fixed precision
+         * KonigDecimal("1.01234567890").roundToScale(Octos).roundToScale(Nanos) // <- THROWS ERROR. Cannot add precision to already fixed precision
+         * KonigDecimal("1.01234567890").roundToScale(Octos).roundToScale(Octos) // FixedKonigDecimal<Octos>("1.01234568") (no-op)
+         * KonigDecimal("1.01234567890").roundToScale(Octos).roundToScale(Micros) // FixedKonigDecimal<Micros>("1.012346")
+         * KonigDecimal("1.01234567890").roundToScale(Octos).roundToScale(Centis) // FixedKonigDecimal<Centis>("1.01")
          *
-         * KonigDecimal("1.01234567890").roundToScale(Micros).roundToNewScale(Attos) // <- THROWS ERROR. Cannot add precision to already fixed precision
-         * KonigDecimal("1.01234567890").roundToScale(Micros).roundToNewScale(Nanos) // <- THROWS ERROR. Cannot add precision to already fixed precision
-         * KonigDecimal("1.01234567890").roundToScale(Micros).roundToNewScale(Octos) // <- THROWS ERROR. Cannot add precision to already fixed precision
-         * KonigDecimal("1.01234567890").roundToScale(Micros).roundToNewScale(Micros) // FixedKonigDecimal<Micros>("1.012346") (no-op)
-         * KonigDecimal("1.01234567890").roundToScale(Micros).roundToNewScale(Centis) // FixedKonigDecimal<Centis>("1.01")
+         * KonigDecimal("1.01234567890").roundToScale(Micros).roundToScale(Attos) // <- THROWS ERROR. Cannot add precision to already fixed precision
+         * KonigDecimal("1.01234567890").roundToScale(Micros).roundToScale(Nanos) // <- THROWS ERROR. Cannot add precision to already fixed precision
+         * KonigDecimal("1.01234567890").roundToScale(Micros).roundToScale(Octos) // <- THROWS ERROR. Cannot add precision to already fixed precision
+         * KonigDecimal("1.01234567890").roundToScale(Micros).roundToScale(Micros) // FixedKonigDecimal<Micros>("1.012346") (no-op)
+         * KonigDecimal("1.01234567890").roundToScale(Micros).roundToScale(Centis) // FixedKonigDecimal<Centis>("1.01")
          *
-         * KonigDecimal("1.01234567890").roundToScale(Centis).roundToNewScale(Attos) // <- THROWS ERROR. Cannot add precision to already fixed precision
-         * KonigDecimal("1.01234567890").roundToScale(Centis).roundToNewScale(Nanos) // <- THROWS ERROR. Cannot add precision to already fixed precision
-         * KonigDecimal("1.01234567890").roundToScale(Centis).roundToNewScale(Octos) // <- THROWS ERROR. Cannot add precision to already fixed precision
-         * KonigDecimal("1.01234567890").roundToScale(Centis).roundToNewScale(Micros) // <- THROWS ERROR. Cannot add precision to already fixed precision
-         * KonigDecimal("1.01234567890").roundToScale(Centis).roundToNewScale(Centis) // FixedKonigDecimal<Centis>("1.01") (no-op)
+         * KonigDecimal("1.01234567890").roundToScale(Centis).roundToScale(Attos) // <- THROWS ERROR. Cannot add precision to already fixed precision
+         * KonigDecimal("1.01234567890").roundToScale(Centis).roundToScale(Nanos) // <- THROWS ERROR. Cannot add precision to already fixed precision
+         * KonigDecimal("1.01234567890").roundToScale(Centis).roundToScale(Octos) // <- THROWS ERROR. Cannot add precision to already fixed precision
+         * KonigDecimal("1.01234567890").roundToScale(Centis).roundToScale(Micros) // <- THROWS ERROR. Cannot add precision to already fixed precision
+         * KonigDecimal("1.01234567890").roundToScale(Centis).roundToScale(Centis) // FixedKonigDecimal<Centis>("1.01") (no-op)
          * ```
          */
         fun <NewScale : KonigDecimalScale> roundToScale(newScale: NewScale): FixedKonigDecimal<NewScale> =
