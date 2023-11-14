@@ -20,13 +20,13 @@ class KonigDecimalScaleTest {
     fun `Given custom scale, when rounding a KonigDecimal to the custom scale, the rounding is correct`() {
         val arbitraryPrecision = KonigDecimal("123.1271282748129482912847")
 
-        assertEquals("123.12712827481", arbitraryPrecision.roundToScale(CustomScale).toPlainString())
+        assertEquals("123.12712827481", arbitraryPrecision.roundToScale(CustomScale).toString())
     }
 
     @Test
     fun `Given custom scale, when rounding to a built in scale and then a lower precision custom scale, the rounding is correct`() {
         val arbitraryPrecision = KonigDecimal("123.1271282748129482912847")
 
-        assertEquals("123.127128", arbitraryPrecision.roundToScale(Nanos).roundToScale(CustomScale2).toPlainString())
+        assertEquals("123.127128", arbitraryPrecision.roundToScale(Nanos).roundToScale(CustomScale2).toString())
     }
 }
