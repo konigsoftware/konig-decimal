@@ -50,7 +50,7 @@ publishing {
                 url.set("https://github.com/konigsoftware/konig-decimal")
 
                 name.set("Konig Decimal")
-                description.set("TODO")
+                description.set("Safe and developer friendly arithmetic in idiomatic Kotlin")
 
                 scm {
                     connection.set("scm:git:https://github.com/konigsoftware/konig-decimal.git")
