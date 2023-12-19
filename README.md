@@ -1,4 +1,9 @@
-# konig-decimal
+KonigDecimal
+============
+
+[![Gradle Build Status](https://github.com/konigsoftware/konig-decimal/actions/workflows/build.yaml/badge.svg?query=branch=main)](https://github.com/konigsoftware/konig-decimal/actions/workflows/build.yaml?query=branch%3Amain)
+
+[![konig-kontext](https://img.shields.io/maven-central/v/com.konigsoftware/konig-decimal.svg?label=konig-decimal)](https://central.sonatype.com/search?q=com.konigsoftware%3Akonig-decimal&smo=true)
 
 Allows safe and developer friendly arithmetic in idiomatic Kotlin, built on top of [BigDecimal](https://docs.oracle.com/javase/8/docs/api/java/math/BigDecimal.html). 
 Prevents accidental precision loss during arithmetic operations by enforcing type safety on limited precision arithmetic.
@@ -57,7 +62,7 @@ This method can be helpful when interacting with applications that represent flo
 some scale attached. A common example is an application that represents US Dollar amounts in cents rather than the actual
 dollar amount (ie: 10145 = $101.45). 
 
-This library comes with several pre-existing `LongUnit`'s, but you can easily add your own units when needed. See here for 
+This library comes with several pre-existing `LongUnit`'s, but you can easily add your own units when needed. See [here](https://github.com/konigsoftware/konig-decimal?tab=readme-ov-file#custom-longunit) for 
 an example custom `LongUnit`.
 
 ### Rounding
@@ -65,7 +70,7 @@ an example custom `LongUnit`.
 An arbitrary precision `KonigDecimal` can be rounded to a fixed precision `FixedKonigDecimal` with a given scale. The scale
 is represented by the [`KonigDecimalScale`](https://github.com/konigsoftware/konig-decimal/blob/main/lib/src/main/kotlin/com/konigsoftware/decimal/KonigDecimalScale.kt) class
 which comes with several predefined scales like Nanos, Micros, and Centis. Again you can easily add your own custom scale 
-by following this example.
+by following the [example here](https://github.com/konigsoftware/konig-decimal?tab=readme-ov-file#custom-konigdecimalscale).
 
 ```kotlin
 val arbitraryPrecision = KonigDecimal("1.012345678909876543690")
